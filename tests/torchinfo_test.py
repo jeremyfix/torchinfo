@@ -227,6 +227,75 @@ def test_parameter_list() -> None:
     )
 
 
+def test_parameter_toplevel() -> None:
+    class FCNet(nn.Module):
+        def __init__(self, input_dim, output_dim):
+            super().__init__()
+            self.a = nn.Parameter(torch.randn(input_dim, output_dim))
+            self.b = nn.Parameter(torch.randn(output_dim))
+
+        def forward(self, x):
+            return torch.mm(x, self.a) + self.b
+
+    input_dim = 128
+    output_dim = 64
+    fc = FCNet(input_dim, output_dim)
+    result = summary(fc, input_data=torch.randn(3, input_dim), verbose=2)
+    assert result.total_params == input_dim*output_dim+output_dim
+
+
+def test_parameter_with_other_layers() -> None:
+    class FCNets(nn.Module):
+        def __init__(self, input_dim, hidden_dim, output_dim):
+            # 2 layer fully connected networks
+            super().__init__()
+            # layer1 with nn.Linear
+            self.fc1 = nn.Linear(input_dim, hidden_dim)
+            # layer2 with nn.Linear
+            self.fc2 = nn.Linear(hidden_dim, output_dim)
+            # activation
+            self.activation = nn.ReLU()
+
+        def forward(self, x):
+            # x.shape = [batch_size, input_dim]
+            # layer1
+            h = self.fc1(x)
+            # activation
+            h = self.activation(h)
+            # layer2
+            out = self.fc2(h)
+            return out
+
+    fc = FCNets(128, 64, 32)
+    result_1 = summary(fc, input_data=torch.randn(3, 128), verbose=0)
+
+    class FCNets(nn.Module):
+        def __init__(self, input_dim, hidden_dim, output_dim):
+            # 2 layer fully connected networks
+            super().__init__()
+            # layer1 with nn.Parameter
+            self.weight = nn.Parameter(torch.randn(input_dim, hidden_dim))
+            self.bias = nn.Parameter(torch.randn(hidden_dim))
+            # layer2 with nn.Linear
+            self.fc2 = nn.Linear(hidden_dim, output_dim)
+            # activation
+            self.activation = nn.ReLU()
+
+        def forward(self, x):
+            # x.shape = [batch_size, input_dim]
+            # layer1
+            h = torch.mm(x, self.weight) + self.bias
+            # activation
+            out = self.activation(h)
+            # layer2
+            out = self.fc2(h)
+            return h
+
+    fc = FCNets(128, 64, 32)
+    result_2 = summary(fc, input_data=torch.randn(3, 128), verbose=0)
+    assert result_1.total_params == result_2.total_params
+
+
 def test_dict_parameters_1() -> None:
     model = DictParameter()
 
