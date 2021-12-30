@@ -153,7 +153,7 @@ class LayerInfo:
             cur_params, name = self.get_param_count(name, param)
             # Only keep top level params
             # and not the parameters of the submodules
-            if '.' in name:
+            if "." in name:
                 continue
             last_name = name
 
