@@ -241,7 +241,7 @@ def test_parameter_toplevel() -> None:
     output_dim = 64
     fc = FCNet(input_dim, output_dim)
     result = summary(fc, input_data=torch.randn(3, input_dim), verbose=2)
-    assert result.total_params == input_dim*output_dim+output_dim
+    assert result.total_params == input_dim * output_dim + output_dim
 
 
 def test_parameter_with_other_layers() -> None:
