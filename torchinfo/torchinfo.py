@@ -526,6 +526,10 @@ def apply_hooks(
         else:
             hooks.append(module.register_forward_pre_hook(pre_hook))
             hooks.append(module.register_forward_hook(hook))
+    else:
+        # List the top level parameters
+        hooks.append(module.register_forward_pre_hook(pre_hook))
+        hooks.append(module.register_forward_hook(hook))
 
     # module.named_modules(remove_duplicate=False) doesn't work (infinite recursion).
     for name, mod in module._modules.items():  # pylint: disable=protected-access
