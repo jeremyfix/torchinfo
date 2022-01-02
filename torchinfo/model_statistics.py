@@ -25,7 +25,7 @@ class ModelStatistics:
         self.total_output, self.total_mult_adds = 0, 0
 
         for layer_info in summary_list:
-            if layer_info.is_leaf_layer:
+            if layer_info.is_leaf_layer or layer_info.depth == 0:
                 self.total_mult_adds += layer_info.macs
                 if layer_info.is_recursive:
                     continue
