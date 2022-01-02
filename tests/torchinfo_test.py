@@ -245,7 +245,7 @@ def test_parameter_toplevel() -> None:
 
 
 def test_parameter_with_other_layers() -> None:
-    class FCNets(nn.Module):
+    class FCNets1(nn.Module):
         def __init__(self, input_dim, hidden_dim, output_dim):
             # 2 layer fully connected networks
             super().__init__()
@@ -266,10 +266,10 @@ def test_parameter_with_other_layers() -> None:
             out = self.fc2(h)
             return out
 
-    fc = FCNets(128, 64, 32)
-    result_1 = summary(fc, input_data=torch.randn(3, 128), verbose=0)
+    fc = FCNets1(128, 64, 32)
+    result_1 = summary(fc, input_data=torch.randn(3, 128), verbose=2)
 
-    class FCNets(nn.Module):
+    class FCNets2(nn.Module):
         def __init__(self, input_dim, hidden_dim, output_dim):
             # 2 layer fully connected networks
             super().__init__()
@@ -291,8 +291,8 @@ def test_parameter_with_other_layers() -> None:
             out = self.fc2(h)
             return h
 
-    fc = FCNets(128, 64, 32)
-    result_2 = summary(fc, input_data=torch.randn(3, 128), verbose=0)
+    fc = FCNets2(128, 64, 32)
+    result_2 = summary(fc, input_data=torch.randn(3, 128), verbose=2)
     assert result_1.total_params == result_2.total_params
 
 
