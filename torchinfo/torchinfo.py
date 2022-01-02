@@ -526,10 +526,29 @@ def apply_hooks(
         else:
             hooks.append(module.register_forward_pre_hook(pre_hook))
             hooks.append(module.register_forward_hook(hook))
-    else:
-        # List the top level parameters
-        hooks.append(module.register_forward_pre_hook(pre_hook))
-        hooks.append(module.register_forward_hook(hook))
+
+    # We do not need to register a hook for the top level module
+    # but add its parameters in the summary list
+    if module == orig_model and submodules:
+        for name, param in module.named_parameters():
+            if "." in name:
+                continue
+            cur_params, name = info.get_param_count(name, param)
+
+            info.num_params += cur_params
+            if param.requires_grad:
+                info.trainable_params += cur_params
+            ksize = list(param.size())
+            if name == "weight":
+                # to make [in_shape, out_shape, ksize, ksize]
+                if len(ksize) > 1:
+                    ksize[0], ksize[1] = ksize[1], ksize[0]
+            info.inner_layers[name] = {
+                ColumnSettings.KERNEL_SIZE: str(ksize),
+                ColumnSettings.NUM_PARAMS: f"├─{cur_params:,}",
+            }
+        # info.var_name = None
+        summary_list.append(info)
 
     # module.named_modules(remove_duplicate=False) doesn't work (infinite recursion).
     for name, mod in module._modules.items():  # pylint: disable=protected-access
