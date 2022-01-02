@@ -530,10 +530,12 @@ def apply_hooks(
     # We do not need to register a hook for the top level module
     # but add its parameters in the summary list
     if module == orig_model and submodules:
+        last_name = None
         for name, param in module.named_parameters():
             if "." in name:
                 continue
             cur_params, name = info.get_param_count(name, param)
+            last_name = name
 
             info.num_params += cur_params
             if param.requires_grad:
@@ -547,6 +549,10 @@ def apply_hooks(
                 ColumnSettings.KERNEL_SIZE: str(ksize),
                 ColumnSettings.NUM_PARAMS: f"├─{cur_params:,}",
             }
+        if info.inner_layers:
+            info.inner_layers[last_name][
+                ColumnSettings.NUM_PARAMS
+            ] = f"└─{info.inner_layers[last_name][ColumnSettings.NUM_PARAMS][2:]}"
         # info.var_name = None
         summary_list.append(info)
 
