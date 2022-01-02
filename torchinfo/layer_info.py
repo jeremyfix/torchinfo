@@ -148,14 +148,9 @@ class LayerInfo:
         Set num_params, trainable, inner_layers, and kernel_size
         using the module's parameters.
         """
-        last_name = ""
+        name = ""
         for name, param in self.module.named_parameters():
             cur_params, name = self.get_param_count(name, param)
-            # Only keep top level params
-            # and not the parameters of the submodules
-            if "." in name:
-                continue
-            last_name = name
 
             self.num_params += cur_params
             if param.requires_grad:
@@ -174,9 +169,9 @@ class LayerInfo:
                 ColumnSettings.NUM_PARAMS: f"├─{cur_params:,}",
             }
         if self.inner_layers:
-            self.inner_layers[last_name][
+            self.inner_layers[name][
                 ColumnSettings.NUM_PARAMS
-            ] = f"└─{self.inner_layers[last_name][ColumnSettings.NUM_PARAMS][2:]}"
+            ] = f"└─{self.inner_layers[name][ColumnSettings.NUM_PARAMS][2:]}"
 
     def calculate_macs(self) -> None:
         """
